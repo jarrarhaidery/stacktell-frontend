@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Code2, MessageSquare, FileText, BookOpen, RotateCcw, Database, Layers, Globe } from 'lucide-react'
+import { MessageSquare, FileText, BookOpen, RotateCcw, Layers, ArrowRight, Github } from 'lucide-react'
 import RepoInput from '../components/RepoInput'
 import FileTree from '../components/FileTree'
 import ChatPanel from '../components/ChatPanel'
@@ -10,15 +10,90 @@ import { useRepoStore } from '../hooks/useRepo'
 import { indexRepo } from '../api/client'
 
 const TABS = [
-  { id: 'chat',        label: 'Chat',       icon: MessageSquare },
-  { id: 'docs',        label: 'Docs',       icon: FileText },
+  { id: 'chat',       label: 'Chat',       icon: MessageSquare },
+  { id: 'docs',       label: 'Docs',       icon: FileText },
   { id: 'onboarding', label: 'Onboarding', icon: BookOpen },
 ]
 
+const S = {
+  shell: {
+    height: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    background: '#080808',
+    color: '#ededed',
+    fontFamily: "'Geist', system-ui, sans-serif",
+    overflow: 'hidden',
+  },
+  topbar: {
+    borderBottom: '0.5px solid rgba(255,255,255,0.07)',
+    padding: '0 16px',
+    height: '48px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    flexShrink: 0,
+    background: '#0a0a0a',
+  },
+  logo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '7px',
+    textDecoration: 'none',
+    flexShrink: 0,
+    cursor: 'pointer',
+  },
+  logoMark: {
+    width: '20px',
+    height: '20px',
+    background: '#fff',
+    borderRadius: '4px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  body: {
+    flex: 1,
+    display: 'flex',
+    overflow: 'hidden',
+  },
+  sidebar: {
+    width: '220px',
+    borderRight: '0.5px solid rgba(255,255,255,0.07)',
+    display: 'flex',
+    flexDirection: 'column',
+    flexShrink: 0,
+    overflow: 'hidden',
+    background: '#0a0a0a',
+  },
+  sidebarHead: {
+    padding: '12px',
+    borderBottom: '0.5px solid rgba(255,255,255,0.06)',
+    flexShrink: 0,
+  },
+  main: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+  },
+  tabbar: {
+    borderBottom: '0.5px solid rgba(255,255,255,0.07)',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '0 2px',
+    flexShrink: 0,
+    background: '#0a0a0a',
+  },
+}
+
 export default function Workspace() {
   const navigate = useNavigate()
-  const { repoId, repoName, fileTree, stats, activeTab, isIndexing, indexError,
-          setRepo, setSelectedFile, selectedFile, setActiveTab, setIndexing, setIndexError, reset } = useRepoStore()
+  const {
+    repoId, repoName, fileTree, stats, activeTab, isIndexing, indexError,
+    setRepo, setSelectedFile, selectedFile, setActiveTab,
+    setIndexing, setIndexError, reset,
+  } = useRepoStore()
 
   const handleIndex = async (payload) => {
     setIndexing(true)
@@ -34,76 +109,105 @@ export default function Workspace() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-950 text-gray-100">
+    <div style={S.shell}>
       {/* Topbar */}
-      <header className="border-b border-gray-800 px-4 py-3 flex items-center gap-4 flex-shrink-0">
-        <button onClick={() => navigate('/')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <Code2 size={18} className="text-indigo-400" />
-          <span className="font-semibold text-sm">Stacktell <span className="text-indigo-400">AI</span></span>
-        </button>
-        <div className="flex-1 max-w-xl">
+      <header style={S.topbar}>
+        <div onClick={() => navigate('/')} style={S.logo}>
+          <div style={S.logoMark}>
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+              <path d="M2 2h3v3H2zM7 2h3v3H7zM2 7h3v3H7zM7 7h3v3H7z" fill="#080808" />
+            </svg>
+          </div>
+          <span style={{ fontSize: '13px', fontWeight: 500, letterSpacing: '-0.02em', color: '#ededed' }}>Stacktell</span>
+        </div>
+
+        <div style={{ width: '0.5px', height: '16px', background: 'rgba(255,255,255,0.08)', flexShrink: 0 }} />
+
+        <div style={{ flex: 1, maxWidth: '520px' }}>
           <RepoInput onIndex={handleIndex} isIndexing={isIndexing} />
         </div>
+
         {repoId && (
-          <button onClick={reset} className="text-gray-500 hover:text-gray-300 transition-colors p-1.5 rounded hover:bg-gray-800">
-            <RotateCcw size={15} />
+          <button onClick={reset}
+            style={{ marginLeft: 'auto', padding: '5px', borderRadius: '6px', background: 'transparent', border: '0.5px solid rgba(255,255,255,0.08)', color: '#555', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.15s' }}
+            title="Reset"
+            onMouseEnter={e => { e.currentTarget.style.color = '#ededed'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#555'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}>
+            <RotateCcw size={13} />
           </button>
         )}
       </header>
 
       {indexError && (
-        <div className="px-4 py-2 bg-red-500/10 border-b border-red-500/20 text-red-400 text-sm">{indexError}</div>
+        <div style={{ padding: '8px 16px', background: 'rgba(239,68,68,0.08)', borderBottom: '0.5px solid rgba(239,68,68,0.15)', fontSize: '12px', color: '#f87171', flexShrink: 0 }}>
+          {indexError}
+        </div>
       )}
 
-      <div className="flex-1 flex overflow-hidden">
+      <div style={S.body}>
         {/* Sidebar */}
-        <aside className="w-56 border-r border-gray-800 flex flex-col flex-shrink-0 overflow-hidden">
+        <aside style={S.sidebar}>
           {repoId ? (
             <>
-              <div className="p-3 border-b border-gray-800">
-                <p className="text-xs font-medium text-gray-200 truncate">{repoName}</p>
-                <div className="flex items-center gap-3 mt-1.5">
-                  <span className="flex items-center gap-1 text-xs text-gray-500">
-                    <Database size={10} /> {stats?.total_files} files
-                  </span>
-                  <span className="flex items-center gap-1 text-xs text-gray-500">
-                    <Layers size={10} /> {stats?.total_chunks} chunks
-                  </span>
+              <div style={S.sidebarHead}>
+                <div style={{ fontSize: '12px', fontWeight: 500, color: '#ededed', letterSpacing: '-0.02em', marginBottom: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {repoName}
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  {[['files', stats?.total_files], ['chunks', stats?.total_chunks]].map(([l, v]) => (
+                    <div key={l} style={{ fontSize: '11px', color: '#444', fontFamily: "'Geist Mono', monospace" }}>
+                      <span style={{ color: '#888' }}>{v}</span> {l}
+                    </div>
+                  ))}
                 </div>
                 {stats?.languages && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {Object.entries(stats.languages).slice(0, 3).map(([lang, count]) => (
-                      <span key={lang} className="text-xs bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded">{lang}</span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
+                    {Object.keys(stats.languages).slice(0, 4).map(lang => (
+                      <span key={lang} style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.06)', color: '#555', fontFamily: "'Geist Mono', monospace" }}>
+                        {lang}
+                      </span>
                     ))}
                   </div>
                 )}
               </div>
-              <div className="flex-1 overflow-y-auto">
-                <div className="px-3 py-2">
-                  <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">Files</p>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '4px 0' }}>
+                <div style={{ padding: '8px 12px 4px', fontSize: '10px', fontFamily: "'Geist Mono', monospace", color: '#333', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  Explorer
                 </div>
                 <FileTree nodes={fileTree} onSelectFile={setSelectedFile} selectedFile={selectedFile} />
               </div>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
-              <Globe size={28} className="text-gray-700 mb-3" />
-              <p className="text-xs text-gray-600 leading-relaxed">Paste a GitHub URL above and click Index Repo to get started</p>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center', gap: '10px' }}>
+              <Github size={22} color="#222" />
+              <p style={{ fontSize: '12px', color: '#333', lineHeight: 1.6 }}>Paste a GitHub URL above to index a repo</p>
             </div>
           )}
         </aside>
 
-        {/* Main */}
-        <main className="flex-1 flex flex-col overflow-hidden">
-          <div className="border-b border-gray-800 flex">
+        {/* Main panel */}
+        <main style={S.main}>
+          <div style={S.tabbar}>
             {TABS.map(({ id, label, icon: Icon }) => (
               <button key={id} onClick={() => setActiveTab(id)}
-                className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === id ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>
-                <Icon size={14} /> {label}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  padding: '0 14px', height: '40px',
+                  fontSize: '12px', fontWeight: activeTab === id ? 500 : 400,
+                  color: activeTab === id ? '#ededed' : '#444',
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  borderBottom: `1px solid ${activeTab === id ? '#6366f1' : 'transparent'}`,
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { if (activeTab !== id) e.currentTarget.style.color = '#888' }}
+                onMouseLeave={e => { if (activeTab !== id) e.currentTarget.style.color = '#444' }}>
+                <Icon size={13} />
+                {label}
               </button>
             ))}
           </div>
-          <div className="flex-1 overflow-hidden">
+
+          <div style={{ flex: 1, overflow: 'hidden' }}>
             {activeTab === 'chat'        && <ChatPanel />}
             {activeTab === 'docs'        && <DocViewer />}
             {activeTab === 'onboarding' && <OnboardingGuide />}
